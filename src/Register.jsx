@@ -28,7 +28,7 @@ function Register() {
         formData.append("passwordagain", values.passwordagain);
         formData.append("photo", values.photo); // Fotoğrafı ekliyoruz
 
-        const response = await axios.post("/api/register", formData, {
+        const response = await axios.post("http://localhost:3000/api/auth/register", formData, {
           headers: {
             "Content-Type": "multipart/form-data", // Dosya gönderimi için gerekli
           },
