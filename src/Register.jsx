@@ -16,7 +16,7 @@ function Register() {
       email: '',
       password: '',
       passwordagain: '',
-      photo: null, // Fotoğrafı burada saklayacağız
+      photo: null, 
     },
     validationSchema: Registeryup,
     onSubmit: async (values) => {
@@ -75,6 +75,7 @@ function Register() {
           value={registerformik.values.email}
           onChange={registerformik.handleChange}
           onBlur={registerformik.handleBlur}
+          placeholder='email'
         />
         {registerformik.touched.email && registerformik.errors.email && (
           <div>{registerformik.errors.email}</div>
@@ -87,6 +88,7 @@ function Register() {
           onChange={registerformik.handleChange}
           value={registerformik.values.password}
           onBlur={registerformik.handleBlur}
+          placeholder='password'
         />
         {registerformik.touched.password && registerformik.errors.password && (
           <div>{registerformik.errors.password}</div>
@@ -99,6 +101,7 @@ function Register() {
           onChange={registerformik.handleChange}
           onBlur={registerformik.handleBlur}
           value={registerformik.values.passwordagain}
+          placeholder='passwordagain'
         />
         {registerformik.touched.passwordagain && registerformik.errors.passwordagain && (
           <div>{registerformik.errors.passwordagain}</div>
@@ -137,7 +140,7 @@ function Register() {
           </div>
         )}
 
-        {/* Kayıt Butonu (Fotoğraf çekilmeden disabled) */}
+   
         <button 
           type="submit" 
           disabled={!imgSrc || registerformik.isSubmitting}
