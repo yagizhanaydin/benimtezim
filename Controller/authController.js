@@ -17,7 +17,7 @@ export const Register = async (req, res) => {
   try {
     const { email, password, passwordagain } = req.body;
 
-    // Validasyon
+  
     if (!email || !password || !passwordagain) {
       return res.status(400).json({ success: false, error: 'Tüm alanlar zorunludur' });
     }
@@ -26,13 +26,13 @@ export const Register = async (req, res) => {
       return res.status(400).json({ success: false, error: 'Şifreler eşleşmiyor' });
     }
 
-    // Kullanıcı kontrolü
+ 
     const existingUser = await findUserByEmail(email);
     if (existingUser) {
       return res.status(409).json({ success: false, error: 'Bu email zaten kayıtlı' });
     }
 
-    // Şifre hash
+ 
     const hashedPassword = await bcrypt.hash(password, 10);
 
     // Fotoğraf varsa işle
@@ -45,7 +45,7 @@ export const Register = async (req, res) => {
       }
     }
 
-    // Yeni kullanıcıyı veritabanına ekle
+ 
     const newUser = await createUser(email, hashedPassword, photoFilename);
 
     // JWT_SECRET kontrolü
@@ -63,7 +63,7 @@ export const Register = async (req, res) => {
       { expiresIn: '24h' }
     );
 
-    // Başarılı yanıt
+  
     return res.status(201).json({
       success: true,
       message: 'Kullanıcı başarıyla kaydedildi',
@@ -92,6 +92,67 @@ export const Register = async (req, res) => {
       success: false,
       error: 'Sunucu hatası',
       details: process.env.NODE_ENV === 'development' ? error.message : undefined
+    });
+  }
+};
+
+
+export const Login = async (req, res) => {
+  const { email, password } = req.body;
+  
+  try {
+    if (!email || !password) {
+      return res.status(400).json({ 
+        success: false, 
+        error: 'Email ve şifre alanları zorunludur' 
+      });
+    }
+
+    const userResult = await pool.query(
+      "SELECT * FROM users WHERE email = $1", 
+      [email]
+    );
+    
+    if (userResult.rows.length === 0) {
+      return res.status(401).json({ 
+        success: false, 
+        error: 'Geçersiz email veya şifre' 
+      });
+    }
+
+    const user = userResult.rows[0];
+    const isPasswordValid = await bcrypt.compare(password, user.password);
+    
+    if (!isPasswordValid) {
+      return res.status(401).json({ 
+        success: false, 
+        error: 'Geçersiz email veya şifre' 
+      });
+    }
+
+    const token = jwt.sign(
+      {
+        user_id: user.id,
+        email: user.email,
+        role: user.role
+      },
+      process.env.JWT_SECRET || 'defaultsecret',
+      { expiresIn: '24h' }
+    );
+
+    // DÜZELTME: Response yapısını basitleştiriyoruz
+    return res.status(200).json({
+      success: true,
+      token,
+      role: user.role, // Direkt role bilgisini dönüyoruz
+      message: 'Giriş başarılı'
+    });
+
+  } catch (error) {
+    console.error('Giriş hatası:', error);
+    return res.status(500).json({
+      success: false,
+      error: 'Sunucu hatası'
     });
   }
 };

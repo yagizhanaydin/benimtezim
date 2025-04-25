@@ -6,7 +6,7 @@ import helmet from 'helmet';
 import cookieParser from 'cookie-parser';
 import rateLimit from 'express-rate-limit';
 import { fileURLToPath } from 'url';
-import authRoutes from './routes/authRoutes.js';
+import authRoutes from './Routes/authRoutes.js';
 
 dotenv.config();
 
@@ -21,7 +21,7 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use(helmet());
 
-// CORS ayarı (frontend 5173 portundan çalışıyor)
+
 app.use(cors({
   origin: 'http://localhost:5173',
   credentials: true
@@ -34,11 +34,11 @@ const limiter = rateLimit({
 });
 app.use(limiter);
 
-// Static dosyalar
+
 app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
 
-// Routes
-app.use('/api/auth', authRoutes);
+
+app.use('/api/auth', authRoutes); // Auth routes (register ve login burada)
 
 // Hata yönetimi middleware'i
 app.use((err, req, res, next) => {

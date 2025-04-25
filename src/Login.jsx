@@ -1,73 +1,81 @@
-import React from 'react'
-import axios from 'axios'
-import { useNavigate } from 'react-router-dom'
-import { useFormik } from 'formik'
-import { Loginyupp } from './schemas/Loginyup'
+import React, { useState } from 'react';
+import axios from 'axios';
+import { useNavigate } from 'react-router-dom';
+import { useFormik } from 'formik';
+import * as Yup from 'yup';
 
-function Login() {
-  const navigate = useNavigate()
+const Login = () => {
+  const navigate = useNavigate();
+  const [error, setError] = useState('');
+  const [isLoading, setIsLoading] = useState(false);
 
-  const loginformik = useFormik({
+  const formik = useFormik({
     initialValues: {
       email: '',
       password: '',
     },
-    validationSchema: Loginyupp,
+    validationSchema: Yup.object({
+      email: Yup.string().email('Geçersiz email').required('Zorunlu alan'),
+      password: Yup.string().min(6, 'En az 6 karakter').required('Zorunlu alan')
+    }),
     onSubmit: async (values) => {
+      setIsLoading(true);
       try {
-        const response = await axios.post('/api/login', values)
-
-        // Assuming token and role are returned from the API
-        const { token, role } = response.data
-
-        localStorage.setItem('token', token)
-        localStorage.setItem('role', role)
-
-        if (role === 'admin') {
-          navigate('/adminpanel')
-        } else if (role === 'yönetici') {
-          navigate('/yönetici')
-        } else if (role === 'client') {
-          navigate('/client')
-        } else {
-          console.error('böyle bir kullanıcı yok')
-        }
-
-      } catch (error) {
-        console.error('Login error:', error)
+        const { data } = await axios.post('http://localhost:3000/api/auth/login', values);
+        localStorage.setItem('token', data.token);
+        
+        if (data.role === 'admin') navigate('/admin');
+        else navigate('/');
+        
+      } catch (err) {
+        setError(err.response?.data?.message || 'Giriş başarısız');
+      } finally {
+        setIsLoading(false);
       }
-    },
-  })
+    }
+  });
 
   return (
-    <form onSubmit={loginformik.handleSubmit}>
-      <input
-        type="email"
-        name="email"
-        value={loginformik.values.email}
-        onBlur={loginformik.handleBlur}
-        onChange={loginformik.handleChange}
-        placeholder='email'
-      />
-      {loginformik.touched.email && loginformik.errors.email && (
-        <div>{loginformik.errors.email}</div>
-      )}
+    <div>
+      <h1>Giriş Yap</h1>
+      
+      {error && <div style={{color: 'red'}}>{error}</div>}
 
-      <input
-        type="password"
-        name="password"
-        value={loginformik.values.password}
-        onBlur={loginformik.handleBlur}
-        onChange={loginformik.handleChange}
-        placeholder='password'
-      />
-      {loginformik.touched.password && loginformik.errors.password && (
-        <div>{loginformik.errors.password}</div>
-      )}
+      <form onSubmit={formik.handleSubmit}>
+        <div>
+          <label>Email</label>
+          <input
+            type="email"
+            name="email"
+            onChange={formik.handleChange}
+            onBlur={formik.handleBlur}
+            value={formik.values.email}
+          />
+          {formik.touched.email && formik.errors.email && (
+            <div style={{color: 'red'}}>{formik.errors.email}</div>
+          )}
+        </div>
 
-      <button type="submit">Giriş Yap</button>
-    </form>
-  )
-}
+        <div>
+          <label>Şifre</label>
+          <input
+            type="password"
+            name="password"
+            onChange={formik.handleChange}
+            onBlur={formik.handleBlur}
+            value={formik.values.password}
+          />
+          {formik.touched.password && formik.errors.password && (
+            <div style={{color: 'red'}}>{formik.errors.password}</div>
+          )}
+        </div>
 
-export default Login
+        <button type="submit" disabled={isLoading}>
+          {isLoading ? 'Yükleniyor...' : 'Giriş Yap'}
+        </button>
+      </form>
+    </div>
+  );
+};
+
+export default Login;
