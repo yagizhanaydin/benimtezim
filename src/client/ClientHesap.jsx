@@ -5,8 +5,10 @@ import { useState, useEffect } from 'react'
 
 function ClientHesap() {
     const navigate = useNavigate();
+    // Kullanıcı bilgilerini tutacak state
     const [clientdatagetir, setclientdatagetir] = useState(null);
 
+    // Kullanıcı bilgilerini API'den çeken fonksiyon
     const clientbilgigetir = async () => {
         try {
             const token = localStorage.getItem("token");
@@ -15,10 +17,11 @@ function ClientHesap() {
                     Authorization: `Bearer ${token}`
                 }
             });
-            setclientdatagetir(response.data);
+            setclientdatagetir(response.data); //gelen bilgiler burada tutulur
         } catch (error) {
-            console.error("Veri getirme hatası:", error);
+            console.error("Veri çekerken hata oluştu:", error);
          
+        
             if (error.response && error.response.status === 401) {
                 navigate("/login");
             }
@@ -29,11 +32,13 @@ function ClientHesap() {
         const token = localStorage.getItem("token");
         const role = localStorage.getItem("role");
         
+    
         if (!token || role !== "user") {
             navigate("/login");
         }
     }
 
+  
     useEffect(() => {
         clientbilgicontrol();
         clientbilgigetir();
@@ -41,7 +46,16 @@ function ClientHesap() {
 
     return (
         <>
-        
+            <h3>Bilgilerim</h3>
+            {clientdatagetir ? (
+                <>
+                    <div>Kullanıcı Adı: {clientdatagetir.kullanici_adi}</div>
+                    <div>Email: {clientdatagetir.email}</div>
+                   
+                </>
+            ) : (
+                <div>Bilgiler yükleniyor...</div>
+            )}
         </>
     )
 }

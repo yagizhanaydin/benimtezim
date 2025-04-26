@@ -15,11 +15,13 @@ export const findUserByEmail = async (email) => {
   return result.rows[0]; // Kullanıcı varsa döner, yoksa undefined
 };
 
-// Yeni kullanıcı oluşturur
-export const createUser = async (email, hashedPassword, photoFilename) => {
+export const createUser = async (email, hashedPassword, kullanici_adi, photoFilename) => {
   const result = await pool.query(
-    'INSERT INTO users (email, password, photo, role) VALUES ($1, $2, $3, $4) RETURNING *',
-    [email, hashedPassword, photoFilename, 'user'] // Varsayılan role: user
+    `INSERT INTO users 
+    (email, password, kullanici_adi, photo, role) 
+    VALUES ($1, $2, $3, $4, $5) 
+    RETURNING *`,
+    [email, hashedPassword, kullanici_adi, photoFilename || null, 'user']
   );
   return result.rows[0];
 };

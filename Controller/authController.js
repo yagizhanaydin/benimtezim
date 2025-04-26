@@ -15,10 +15,10 @@ const __dirname = path.dirname(__filename);
 const unlinkAsync = promisify(fs.unlink);
 export const Register = async (req, res) => {
   try {
-    const { email, password, passwordagain } = req.body;
+    const { email, password, passwordagain,kullanici_adi } = req.body;
 
   
-    if (!email || !password || !passwordagain) {
+    if (!email || !password || !passwordagain || !kullanici_adi) {
       return res.status(400).json({ success: false, error: 'Tüm alanlar zorunludur' });
     }
 
@@ -46,7 +46,9 @@ export const Register = async (req, res) => {
     }
 
  
-    const newUser = await createUser(email, hashedPassword, photoFilename);
+
+const newUser = await createUser(email, hashedPassword, kullanici_adi,photoFilename);
+
 
     // JWT_SECRET kontrolü
     const jwtSecret = process.env.JWT_SECRET || 'defaultsecret';

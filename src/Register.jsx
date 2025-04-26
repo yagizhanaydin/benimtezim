@@ -16,16 +16,18 @@ function Register() {
       email: '',
       password: '',
       passwordagain: '',
+      kullanici_adi:'',
       photo: null, 
     },
     validationSchema: Registeryup,
     onSubmit: async (values) => {
       try {
-        // FormData kullanarak fotoğrafı gönderiyoruz
+      
         const formData = new FormData();
         formData.append("email", values.email);
         formData.append("password", values.password);
         formData.append("passwordagain", values.passwordagain);
+        formData.append("kullanici_adi", values.kullanici_adi);
         formData.append("photo", values.photo); // Fotoğrafı ekliyoruz
 
         const response = await axios.post("http://localhost:3000/api/auth/register", formData, {
@@ -104,8 +106,20 @@ function Register() {
           placeholder='passwordagain'
         />
         {registerformik.touched.passwordagain && registerformik.errors.passwordagain && (
-          <div>{registerformik.errors.passwordagain}</div>
+          <div>{registerformik.errors.passwordagain}</div>  
         )}
+
+<input 
+type="text"
+name='kullanici_adi' 
+placeholder='uygulama içi kullanıcı adınız'
+value={registerformik.values.kullanici_adi}
+onBlur={registerformik.handleBlur}
+onChange={registerformik.handleChange}
+/>
+{registerformik.touched.kullanici_adi && registerformik.errors.kullanici_adi && (
+  <div>{registerformik.errors.kullanici_adi}</div>
+)}
 
         {/* Kamera Bölümü */}
         {!imgSrc ? (
