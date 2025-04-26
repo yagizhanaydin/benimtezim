@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import axios from 'axios';
 import { useNavigate } from 'react-router-dom';
 import { useFormik } from 'formik';
-import * as Yup from 'yup';
+import { Loginyupp } from './schemas/Loginyup'; // senin doğrulama şeman
 
 const Login = () => {
   const navigate = useNavigate();
@@ -14,21 +14,22 @@ const Login = () => {
       email: '',
       password: '',
     },
-    validationSchema: Yup.object({
-      email: Yup.string().email('Geçersiz email').required('Zorunlu alan'),
-      password: Yup.string().min(6, 'En az 6 karakter').required('Zorunlu alan')
-    }),
+    validationSchema: Loginyupp,
     onSubmit: async (values) => {
       setIsLoading(true);
       try {
         const { data } = await axios.post('http://localhost:3000/api/auth/login', values);
+        
         localStorage.setItem('token', data.token);
-        
-        if (data.role === 'admin') navigate('/admin');
-        else navigate('/');
-        
+        localStorage.setItem('role', data.role); // Rolü de kaydet!
+
+        if (data.role === 'admin') {
+          navigate('/admin');
+        } else {
+          navigate('/clienthesap');
+        }
       } catch (err) {
-        setError(err.response?.data?.message || 'Giriş başarısız');
+        setError(err.response?.data?.error || 'Giriş başarısız');
       } finally {
         setIsLoading(false);
       }
@@ -38,35 +39,39 @@ const Login = () => {
   return (
     <div>
       <h1>Giriş Yap</h1>
-      
-      {error && <div style={{color: 'red'}}>{error}</div>}
+
+      {error && <div style={{ color: 'red' }}>{error}</div>}
 
       <form onSubmit={formik.handleSubmit}>
         <div>
-          <label>Email</label>
+          <label htmlFor="email">Email</label>
           <input
             type="email"
+            id="email"
             name="email"
+            autoComplete="email"
             onChange={formik.handleChange}
             onBlur={formik.handleBlur}
             value={formik.values.email}
           />
           {formik.touched.email && formik.errors.email && (
-            <div style={{color: 'red'}}>{formik.errors.email}</div>
+            <div style={{ color: 'red' }}>{formik.errors.email}</div>
           )}
         </div>
 
         <div>
-          <label>Şifre</label>
+          <label htmlFor="password">Şifre</label>
           <input
             type="password"
+            id="password"
             name="password"
+            autoComplete="current-password"
             onChange={formik.handleChange}
             onBlur={formik.handleBlur}
             value={formik.values.password}
           />
           {formik.touched.password && formik.errors.password && (
-            <div style={{color: 'red'}}>{formik.errors.password}</div>
+            <div style={{ color: 'red' }}>{formik.errors.password}</div>
           )}
         </div>
 

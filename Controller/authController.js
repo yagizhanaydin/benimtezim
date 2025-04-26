@@ -99,37 +99,29 @@ const newUser = await createUser(email, hashedPassword, kullanici_adi,photoFilen
 };
 
 
+
 export const Login = async (req, res) => {
   const { email, password } = req.body;
   
   try {
     if (!email || !password) {
-      return res.status(400).json({ 
-        success: false, 
-        error: 'Email ve şifre alanları zorunludur' 
-      });
+      return res.status(400).json({ success: false, error: 'Email ve şifre zorunludur' });
     }
 
     const userResult = await pool.query(
       "SELECT * FROM users WHERE email = $1", 
       [email]
     );
-    
+
     if (userResult.rows.length === 0) {
-      return res.status(401).json({ 
-        success: false, 
-        error: 'Geçersiz email veya şifre' 
-      });
+      return res.status(401).json({ success: false, error: 'Geçersiz email veya şifre' });
     }
 
     const user = userResult.rows[0];
     const isPasswordValid = await bcrypt.compare(password, user.password);
-    
+
     if (!isPasswordValid) {
-      return res.status(401).json({ 
-        success: false, 
-        error: 'Geçersiz email veya şifre' 
-      });
+      return res.status(401).json({ success: false, error: 'Geçersiz email veya şifre' });
     }
 
     const token = jwt.sign(
@@ -142,19 +134,51 @@ export const Login = async (req, res) => {
       { expiresIn: '24h' }
     );
 
-    // DÜZELTME: Response yapısını basitleştiriyoruz
     return res.status(200).json({
       success: true,
       token,
-      role: user.role, // Direkt role bilgisini dönüyoruz
+      role: user.role, // Rolü dönüyoruz ki frontend kontrol etsin
       message: 'Giriş başarılı'
     });
 
   } catch (error) {
     console.error('Giriş hatası:', error);
-    return res.status(500).json({
-      success: false,
-      error: 'Sunucu hatası'
-    });
+    return res.status(500).json({ success: false, error: 'Sunucu hatası' });
+  }
+};
+
+
+
+export const getdatauser = async (req, res) => {
+  // Token'dan user id al (middleware ile eklenmiş olmalı)
+  const userId = req.user.id; 
+
+  try {
+   
+      const { rows } = await pool.query(
+          'SELECT kullanici_adi, email FROM users WHERE id = $1',
+          [userId]
+      );
+
+      // Kullanıcı bulunamazsa
+      if (rows.length === 0) {
+          return res.status(404).json({ 
+              success: false, 
+              error: 'Kullanıcı bulunamadı' 
+          });
+      }
+
+ 
+      res.status(200).json({
+          success: true,
+          user: rows[0] 
+      });
+
+  } catch (error) {
+      console.error('Database hatası:', error);
+      res.status(500).json({ 
+          success: false, 
+          error: 'Veritabanı hatası, lütfen tekrar deneyin' 
+      });
   }
 };
