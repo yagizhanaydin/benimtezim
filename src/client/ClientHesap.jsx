@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import axios from 'axios';
 import { useNavigate } from 'react-router-dom';
 
@@ -7,21 +7,29 @@ function ClientHesap() {
   const [clientData, setClientData] = useState(null);
   const [error, setError] = useState(null);
 
-  const fetchClientData = async () => {
+  const kontrolEt = useCallback(() => {
+    const token = localStorage.getItem("token");
+    const role = localStorage.getItem("role");
+
+    if (!token || role !== "user") {
+      navigate("/login");
+      return false;
+    }
+    return true;
+  }, [navigate]);
+
+  const fetchClientData = useCallback(async () => {
+    if (!kontrolEt()) return;
+
     try {
       const token = localStorage.getItem("token");
-      if (!token) {
-        navigate("/login");
-        return;
-      }
-
       const response = await axios.get("http://localhost:3000/api/auth/clientdata", {
         headers: {
           Authorization: `Bearer ${token}`
         }
       });
 
-      if (response.data && response.data.user) {
+      if (response.data?.user) {
         setClientData(response.data.user);
       } else {
         throw new Error("Geçersiz veri formatı");
@@ -30,27 +38,21 @@ function ClientHesap() {
       console.error("Veri çekerken hata:", error);
       setError("Bilgiler alınırken hata oluştu");
 
-      if (error.response && error.response.status === 401) {
-        localStorage.removeItem("token");
-        localStorage.removeItem("role");
-        navigate("/login");
+      if (error.response?.status === 401) {
+        logout();
       }
     }
-  };
+  }, [kontrolEt]);
 
-  const kontrolEt = () => {
-    const token = localStorage.getItem("token");
-    const role = localStorage.getItem("role");
-
-    if (!token || role !== "user") {
-      navigate("/login");
-    }
+  const logout = () => {
+    localStorage.removeItem("token");
+    localStorage.removeItem("role");
+    navigate("/login");
   };
 
   useEffect(() => {
-    kontrolEt();
     fetchClientData();
-  }, []);
+  }, [fetchClientData]);
 
   return (
     <div style={{ padding: '20px' }}>
@@ -65,6 +67,8 @@ function ClientHesap() {
       ) : (
         <div>Bilgiler yükleniyor...</div>
       )}
+
+      <button type='button' onClick={logout}>Hesaptan çık</button>
     </div>
   );
 }

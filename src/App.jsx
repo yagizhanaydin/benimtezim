@@ -4,6 +4,7 @@ import Register from './Register'
 import Login from './Login'
 import ClientHesap from './client/ClientHesap'
 import TemelSayfa from './TemelSayfa'
+import ClientDataUpdate from './client/ClientDataUpdate'
 
 function App() {
   const [count, setCount] = useState(0)
@@ -15,6 +16,7 @@ function App() {
         <Route path="/register" element={<Register />} />
         <Route path="/login" element={<Login />} />
         <Route path="/clienthesap" element={<ClientHesap />} />
+        <Route path="/clientupdate" element={<ClientDataUpdate/>}/>
       </Routes>
     </Router>
   )

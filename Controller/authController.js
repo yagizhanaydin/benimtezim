@@ -8,6 +8,7 @@ import { promisify } from 'util';
 import fs from 'fs/promises';
 import path from 'path';
 import { fileURLToPath } from 'url';
+import { error } from 'console';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -180,5 +181,110 @@ export const getdatauser = async (req, res) => {
           success: false, 
           error: 'Veritabanı hatası, lütfen tekrar deneyin' 
       });
+  }
+};
+
+
+
+
+export const dataupdateuser = async (req, res) => {
+  const userId = req.user.id;
+  const { email, password, passwordagain, kullanici_adi } = req.body;
+
+  try {
+    
+    const currentUser = await pool.query(
+      "SELECT email, password, kullanici_adi FROM users WHERE id = $1",
+      [userId]
+    );
+
+    if (currentUser.rows.length === 0) {
+      return res.status(404).json({ 
+        success: false, 
+        error: "Kullanıcı bulunamadı" 
+      });
+    }
+
+    const currentData = currentUser.rows[0];
+
+
+    if (password || passwordagain) {
+      if (!password || !passwordagain) {
+        return res.status(400).json({ 
+          success: false, 
+          error: "Şifre alanları boş olamaz" 
+        });
+      }
+      
+      if (password !== passwordagain) {
+        return res.status(400).json({ 
+          success: false, 
+          error: "Şifreler uyuşmuyor" 
+        });
+      }
+
+      if (password.length < 6) {
+        return res.status(400).json({ 
+          success: false, 
+          error: "Şifre en az 6 karakter olmalı" 
+        });
+      }
+    }
+
+
+    if (email && email !== currentData.email) {
+      const emailCheck = await pool.query(
+        "SELECT * FROM users WHERE email = $1 AND id != $2",
+        [email, userId]
+      );
+      
+      if (emailCheck.rows.length > 0) {
+        return res.status(400).json({ 
+          success: false, 
+          error: "Bu email zaten kullanımda" 
+        });
+      }
+    }
+
+  
+    const updatedFields = {
+      email: email || currentData.email,
+      kullanici_adi: kullanici_adi || currentData.kullanici_adi,
+      password: currentData.password // Varsayılan olarak eski şifre
+    };
+
+  
+    if (password) {
+      updatedFields.password = await bcrypt.hash(password, 10);
+    }
+
+  
+    const updateUser = await pool.query(
+      `UPDATE users SET 
+        email = $1, 
+        password = $2, 
+        kullanici_adi = $3 
+       WHERE id = $4 
+       RETURNING id, email, kullanici_adi`,
+      [
+        updatedFields.email,
+        updatedFields.password,
+        updatedFields.kullanici_adi,
+        userId
+      ]
+    );
+
+    return res.status(200).json({ 
+      success: true,
+      message: "Bilgiler başarıyla güncellendi",
+      user: updateUser.rows[0]
+    });
+
+  } catch (error) {
+    console.error("Güncelleme hatası:", error);
+    return res.status(500).json({ 
+      success: false, 
+      error: "Sunucu hatası" 
+    });
   }
 };

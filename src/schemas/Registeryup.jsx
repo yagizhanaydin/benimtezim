@@ -19,5 +19,5 @@ export const Registeryup = yup.object({
     .string("kullanıcı adı string türünden olmalı")
     .required("bu alanın doldurulması zorunludur")
     .min(5, "kullanıcı adı en az 5 karakterden oluşmalı")
-    .max(12, "kullanıcı adı maksimum 12 karakter olabilir")
+    .max(15, "kullanıcı adı maksimum 15 karakter olabilir")
 });
