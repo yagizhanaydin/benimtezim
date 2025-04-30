@@ -51,11 +51,11 @@ export const Register = async (req, res) => {
 const newUser = await createUser(email, hashedPassword, kullanici_adi,photoFilename);
 
 
-    // JWT_SECRET kontrolü
+    //
     const jwtSecret = process.env.JWT_SECRET || 'defaultsecret';
     console.log("JWT_SECRET:", jwtSecret); // debug
 
-    // JWT oluştur
+ 
     const token = jwt.sign(
       {
         user_id: newUser.id,

@@ -21,7 +21,7 @@ const Login = () => {
         const { data } = await axios.post('http://localhost:3000/api/auth/login', values);
         
         localStorage.setItem('token', data.token);
-        localStorage.setItem('role', data.role); // Rolü de kaydet!
+        localStorage.setItem('role', data.role);
 
         if (data.role === 'admin') {
           navigate('/admin');

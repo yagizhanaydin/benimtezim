@@ -32,7 +32,7 @@ function Register() {
 
         const response = await axios.post("http://localhost:3000/api/auth/register", formData, {
           headers: {
-            "Content-Type": "multipart/form-data", // Dosya gönderimi için gerekli
+            "Content-Type": "multipart/form-data", 
           },
         });
         console.log(response.data);

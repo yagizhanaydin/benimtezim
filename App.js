@@ -7,7 +7,7 @@ import cookieParser from 'cookie-parser';
 import rateLimit from 'express-rate-limit';
 import { fileURLToPath } from 'url';
 import authRoutes from './Routes/authRoutes.js';
-
+import AdminRoutes from  './Routes/AdminRoutes.js'
 dotenv.config();
 
 const __filename = fileURLToPath(import.meta.url);
@@ -38,7 +38,8 @@ app.use(limiter);
 app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
 
 
-app.use('/api/auth', authRoutes); // Auth routes (register ve login burada)
+app.use('/api/auth', authRoutes); 
+app.use('/api/admin',AdminRoutes); 
 
 // Hata yönetimi middleware'i
 app.use((err, req, res, next) => {
